@@ -8,6 +8,7 @@ UI.__index = UI
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
 local CoreGui = game.CoreGui
 
 local function AddConnection(Connection, Function, Name)
@@ -74,6 +75,16 @@ function UI:CreateWindow(WindowConfig: table?): table
     local Tab = {}
     local ScaleX, ScaleY
 
+    local fileName = "TheWorstUI-" .. WindowConfig.Name .. "-Pos.json"
+    local SavedPosition = nil
+    
+    pcall(function()
+        if readfile and isfile and isfile(fileName) then
+            local data = HttpService:JSONDecode(readfile(fileName))
+            SavedPosition = UDim2.new(data.X_Scale, data.X_Offset, data.Y_Scale, data.Y_Offset)
+        end
+    end)
+
     local ScreenGui = CreateElement("ScreenGui", {
         Parent = CoreGui,
         Name = "TheWorstUI-"..WindowConfig.Name
@@ -85,6 +96,7 @@ function UI:CreateWindow(WindowConfig: table?): table
         Name = "MainWindow",
         Transparency = 1,
         Size = UDim2.new(0, WindowConfig.SizeX, 0, WindowConfig.SizeY),
+        Position = SavedPosition or UDim2.new(0, 100, 0, 100)
     }), {
         SetChildren(CreateElement("Frame", {
             Name = "MainWindowHolder",
@@ -282,17 +294,34 @@ function UI:CreateWindow(WindowConfig: table?): table
     end)
 
     local function AddDraggingFunctionality(DragPoint: Instance, Main: Instance)
-        -- функция из ориона // a function from orion ui lib
         pcall(function()
             local Dragging, DragInput, MousePos, FramePos = false
+            
+            local function SavePosition()
+                pcall(function()
+                    if writefile then
+                        local data = {
+                            X_Scale = Main.Position.X.Scale,
+                            X_Offset = Main.Position.X.Offset,
+                            Y_Scale = Main.Position.Y.Scale,
+                            Y_Offset = Main.Position.Y.Offset
+                        }
+                        writefile(fileName, HttpService:JSONEncode(data))
+                    end
+                end)
+            end
+
             DragPoint.InputBegan:Connect(function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1  or Input.UserInputType == Enum.UserInputType.Touch then
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     Dragging = true
                     MousePos = Input.Position
                     FramePos = Main.Position
 
                     Input.Changed:Connect(function()
-                        if Input.UserInputState == Enum.UserInputState.End then Dragging = false end
+                        if Input.UserInputState == Enum.UserInputState.End then 
+                            Dragging = false 
+                            task.delay(0.22, SavePosition)
+                        end
                     end)
                 end
             end)
