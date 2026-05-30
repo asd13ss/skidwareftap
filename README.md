@@ -15,7 +15,7 @@ this is a minimalist, responsive roblox ui library. it features smooth hover ani
 
 #### 1. initialization & window creation
 ```lua
-local UI = loadstring(game:HttpGet("your_script_url_here"))() -- or paste the library code directly
+local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/asd13ss/skidwareftap/refs/heads/main/Library.lua"))()
 
 local Window = UI:CreateWindow({
     Name = "ui test",           -- window title
