@@ -75,13 +75,15 @@ function UI:CreateWindow(WindowConfig: table?): table
     local Tab = {}
     local ScaleX, ScaleY
 
-    local fileName = "TheWorstUI-" .. WindowConfig.Name .. "-Pos.json"
+    local fileName = "TheWorstUI-" .. WindowConfig.Name .. "-Layout.json"
     local SavedPosition = nil
     
     pcall(function()
         if readfile and isfile and isfile(fileName) then
             local data = HttpService:JSONDecode(readfile(fileName))
             SavedPosition = UDim2.new(data.X_Scale, data.X_Offset, data.Y_Scale, data.Y_Offset)
+            if data.SizeX then WindowConfig.SizeX = data.SizeX end
+            if data.SizeY then WindowConfig.SizeY = data.SizeY end
         end
     end)
 
@@ -297,14 +299,16 @@ function UI:CreateWindow(WindowConfig: table?): table
         pcall(function()
             local Dragging, DragInput, MousePos, FramePos = false
             
-            local function SavePosition()
+            local function SaveLayout()
                 pcall(function()
                     if writefile then
                         local data = {
                             X_Scale = Main.Position.X.Scale,
                             X_Offset = Main.Position.X.Offset,
                             Y_Scale = Main.Position.Y.Scale,
-                            Y_Offset = Main.Position.Y.Offset
+                            Y_Offset = Main.Position.Y.Offset,
+                            SizeX = Main.Size.X.Offset,
+                            SizeY = Main.Size.Y.Offset
                         }
                         writefile(fileName, HttpService:JSONEncode(data))
                     end
@@ -320,7 +324,7 @@ function UI:CreateWindow(WindowConfig: table?): table
                     Input.Changed:Connect(function()
                         if Input.UserInputState == Enum.UserInputState.End then 
                             Dragging = false 
-                            task.delay(0.22, SavePosition)
+                            task.delay(0.22, SaveLayout)
                         end
                     end)
                 end
@@ -346,6 +350,22 @@ function UI:CreateWindow(WindowConfig: table?): table
             local Dragging, DragInput, MousePos, FrameSize = false
             local Clamp, Sized = false, false
             
+            local function SaveLayout()
+                pcall(function()
+                    if writefile then
+                        local data = {
+                            X_Scale = Main.Position.X.Scale,
+                            X_Offset = Main.Position.X.Offset,
+                            Y_Scale = Main.Position.Y.Scale,
+                            Y_Offset = Main.Position.Y.Offset,
+                            SizeX = Main.Size.X.Offset,
+                            SizeY = Main.Size.Y.Offset
+                        }
+                        writefile(fileName, HttpService:JSONEncode(data))
+                    end
+                end)
+            end
+
             ResizePoint.InputBegan:Connect(function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     Dragging = true
@@ -358,6 +378,7 @@ function UI:CreateWindow(WindowConfig: table?): table
                             Dragging = false 
                             Sizing = false
                             Clamp = false
+                            task.delay(0.22, SaveLayout)
                         end
                     end)
                 end
@@ -900,7 +921,7 @@ function UI:CreateWindow(WindowConfig: table?): table
         local Title = CreateElement("TextLabel", {
             Parent = Header,
             Name = "Title",
-            Size = UDim2.new(1, -40, 1, 0),
+            Size = UDim2.new(1, -45, 1, 0),
             Position = UDim2.new(0, 10, 0, 0),
             BackgroundTransparency = 1,
             TextXAlignment = Enum.TextXAlignment.Left,
@@ -908,7 +929,8 @@ function UI:CreateWindow(WindowConfig: table?): table
             Text = Dropdown.Name..": "..(Dropdown.Value ~= "" and Dropdown.Value or "None"),
             TextColor3 = Color3.fromRGB(240, 240, 240),
             TextSize = 15,
-            Font = Enum.Font.GothamBlack
+            Font = Enum.Font.GothamBlack,
+            TextTruncate = Enum.TextTruncate.AtEnd
         })
 
         local Arrow = CreateElement("ImageLabel", {
