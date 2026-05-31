@@ -15,7 +15,7 @@ local WalkspeedSlider = Window:CreateSlider({
     Max = 250,
     Default = 16,
     Callback = function(Value)
-      -- ur logic there :)
+      -- ur logic there
     end
 })
 
@@ -23,7 +23,7 @@ local FlyToggle = Window:CreateToggle({
     Name = "fly hack lol",
     Default = false,
     Callback = function(State)
-        -- fly logic
+        -- ur logic there
     end
 })
 
@@ -32,7 +32,7 @@ local ToggleBind = Window:CreateBind({
     Default = "E",
     Hold = false,
     Callback = function()
-        -- ur logic there :)
+        -- ur logic there
     end
 })
 
@@ -41,7 +41,16 @@ local NumberDropdown = Window:CreateDropdown({
     Options = {"1", "2", "3", "4"},
     Default = "1",
     Callback = function(Selected)
-        -- ur logic there :)
+        -- ur logic there
+    end
+})
+
+local AccentColor = Window:CreateColorpicker({
+    Name = "accent color",
+    Default = Color3.fromRGB(255, 0, 127),
+    DefaultTransparency = 0.3,
+    Callback = function(Color, Transparency)
+        -- ur logic there
     end
 })
 
