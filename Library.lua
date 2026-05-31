@@ -9,7 +9,11 @@ UI.__index = UI
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 local CoreGui = game.CoreGui
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
 
 local function AddConnection(Connection, Function, Name)
     local Conn = Connection:Connect(Function)
@@ -73,7 +77,6 @@ function UI:CreateWindow(WindowConfig: table?): table
     WindowConfig.SizeY = WindowConfig.SizeY or 0
     WindowConfig.CanResize = WindowConfig.CanResize or "BOTH" -- Possible: "", "X", "Y", "BOTH"
     local Tab = {}
-    local ScaleX, ScaleY
 
     local fileName = "TheWorstUI-" .. WindowConfig.Name .. "-Layout.json"
     local SavedPosition = nil
@@ -1059,6 +1062,425 @@ function UI:CreateWindow(WindowConfig: table?): table
         end
 
         return Dropdown
+    end
+
+    function Tab:CreateColorpicker(ColorpickerConfig: table?): table
+        ColorpickerConfig = ColorpickerConfig or {}
+        ColorpickerConfig.Name = ColorpickerConfig.Name or "Colorpicker"
+        ColorpickerConfig.Default = ColorpickerConfig.Default or Color3.fromRGB(255, 255, 255)
+        ColorpickerConfig.DefaultTransparency = ColorpickerConfig.DefaultTransparency or 0
+        ColorpickerConfig.Callback = ColorpickerConfig.Callback or function() end
+
+        local Colorpicker = {
+            Name = ColorpickerConfig.Name,
+            Value = ColorpickerConfig.Default,
+            TransparencyValue = ColorpickerConfig.DefaultTransparency,
+            Opened = false
+        }
+        local ColorpickerNumber = #UI.Elements + 1
+
+        local ColorpickerFrame = SetChildren(CreateElement("Frame", {
+            Parent = HolderFrame.Holder,
+            Name = "Colorpicker",
+            BackgroundTransparency = 0.9,
+            BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+            Size = UDim2.new(1, 0, 0, 30),
+            ClipsDescendants = true
+        }), {
+            CreateElement("UICorner", {CornerRadius = UDim.new(0, 20)}),
+            CreateElement("UIStroke", {
+                Color = Color3.fromRGB(0, 0, 0),
+                Thickness = 1,
+                Transparency = 0.5
+            })
+        })
+        ColorpickerFrame:SetAttribute("Opened", false)
+        UI.Elements[ColorpickerNumber] = ColorpickerFrame
+
+        local Header = CreateElement("Frame", {
+            Parent = ColorpickerFrame,
+            Name = "Header",
+            Size = UDim2.new(1, 0, 0, 30),
+            BackgroundTransparency = 1,
+        })
+
+        local Title = CreateElement("TextLabel", {
+            Parent = Header,
+            Name = "Title",
+            Size = UDim2.new(1, -55, 1, 0),
+            Position = UDim2.new(0, 10, 0, 0),
+            BackgroundTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextYAlignment = Enum.TextYAlignment.Center,
+            Text = Colorpicker.Name,
+            TextColor3 = Color3.fromRGB(240, 240, 240),
+            TextSize = 15,
+            Font = Enum.Font.GothamBlack,
+            TextTruncate = Enum.TextTruncate.AtEnd
+        })
+
+        local ColorBoxBorder = SetChildren(CreateElement("Frame", {
+            Parent = Header,
+            Name = "ColorBoxBorder",
+            Size = UDim2.new(0, 26, 0, 16),
+            Position = UDim2.new(1, -36, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+            BorderSizePixel = 0
+        }), {
+            CreateElement("UICorner", {CornerRadius = UDim.new(0, 5)}),
+            CreateElement("UIStroke", {
+                Color = Color3.fromRGB(240, 240, 240),
+                Thickness = 1,
+                Transparency = 0.5
+            })
+        })
+
+        local CheckerPattern = CreateElement("ImageLabel", {
+            Parent = ColorBoxBorder,
+            Name = "CheckerPattern",
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Image = "rbxassetid://139785960036434",
+            ScaleType = Enum.ScaleType.Tile,
+            TileSize = UDim2.new(0, 6, 0, 6)
+        })
+        CreateElement("UICorner", {CornerRadius = UDim.new(0, 5), Parent = CheckerPattern})
+
+        local ColorBox = CreateElement("Frame", {
+            Parent = ColorBoxBorder,
+            Name = "ColorBox",
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundColor3 = Colorpicker.Value,
+            BackgroundTransparency = Colorpicker.TransparencyValue,
+            BorderSizePixel = 0
+        })
+        CreateElement("UICorner", {CornerRadius = UDim.new(0, 5), Parent = ColorBox})
+
+        local Content = CreateElement("Frame", {
+            Parent = ColorpickerFrame,
+            Name = "Content",
+            Position = UDim2.new(0, 0, 0, 30),
+            Size = UDim2.new(1, 0, 1, -30),
+            BackgroundTransparency = 1,
+            Visible = false
+        })
+
+        local SV_Container = SetChildren(CreateElement("Frame", {
+            Parent = Content,
+            Name = "SV_Container",
+            Size = UDim2.new(0, 80, 0, 80),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 0.9,
+            BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        }), {
+            CreateElement("UICorner", {CornerRadius = UDim.new(0, 8)}),
+            CreateElement("UIStroke", {
+                Color = Color3.fromRGB(0, 0, 0),
+                Thickness = 1,
+                Transparency = 0.5
+            })
+        })
+
+        local SV_Plane = CreateElement("ImageLabel", {
+            Parent = SV_Container,
+            Name = "SV_Plane",
+            Size = UDim2.new(1, -4, 1, -4),
+            Position = UDim2.new(0, 2, 0, 2),
+            Image = "rbxassetid://4155801252",
+            BackgroundTransparency = 1
+        })
+        local SV_Corner = CreateElement("UICorner", {CornerRadius = UDim.new(0, 6), Parent = SV_Plane})
+
+        local SV_Cursor = SetChildren(CreateElement("Frame", {
+            Parent = SV_Plane,
+            Name = "SV_Cursor",
+            Size = UDim2.new(0, 10, 0, 10),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        }), {
+            CreateElement("UICorner", {CornerRadius = UDim.new(1, 0)}),
+            CreateElement("UIStroke", {
+                Color = Color3.fromRGB(0, 0, 0),
+                Thickness = 1.5,
+                Transparency = 0.2
+            })
+        })
+
+        local Hue_Container = SetChildren(CreateElement("Frame", {
+            Parent = Content,
+            Name = "Hue_Container",
+            Size = UDim2.new(0, 16, 0, 80),
+            Position = UDim2.new(0, 100, 0, 10),
+            BackgroundTransparency = 0.9,
+            BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        }), {
+            CreateElement("UICorner", {CornerRadius = UDim.new(0, 8)}),
+            CreateElement("UIStroke", {
+                Color = Color3.fromRGB(0, 0, 0),
+                Thickness = 1,
+                Transparency = 0.5
+            })
+        })
+
+        local HueSlider = CreateElement("Frame", {
+            Parent = Hue_Container,
+            Name = "HueSlider",
+            Size = UDim2.new(1, -4, 1, -4),
+            Position = UDim2.new(0, 2, 0, 2),
+            BackgroundTransparency = 0
+        })
+        local Hue_Corner = CreateElement("UICorner", {CornerRadius = UDim.new(0, 6), Parent = HueSlider})
+        local Hue_Gradient = CreateElement("UIGradient", {
+            Parent = HueSlider,
+            Rotation = 90,
+            Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 4)), 
+                ColorSequenceKeypoint.new(0.20, Color3.fromRGB(234, 255, 0)), 
+                ColorSequenceKeypoint.new(0.40, Color3.fromRGB(21, 255, 0)), 
+                ColorSequenceKeypoint.new(0.60, Color3.fromRGB(0, 255, 255)), 
+                ColorSequenceKeypoint.new(0.80, Color3.fromRGB(0, 17, 255)), 
+                ColorSequenceKeypoint.new(0.90, Color3.fromRGB(255, 0, 251)), 
+                ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 4))
+            }
+        })
+
+        local Hue_Cursor = SetChildren(CreateElement("Frame", {
+            Parent = HueSlider,
+            Name = "Hue_Cursor",
+            Size = UDim2.new(1, 4, 0, 4),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        }), {
+            CreateElement("UICorner", {CornerRadius = UDim.new(0, 2)}),
+            CreateElement("UIStroke", {
+                Color = Color3.fromRGB(0, 0, 0),
+                Thickness = 1.5,
+                Transparency = 0.2
+            })
+        })
+
+        local TransContainer = SetChildren(CreateElement("Frame", {
+            Parent = Content,
+            Name = "TransContainer",
+            Size = UDim2.new(1, -20, 0, 16),
+            Position = UDim2.new(0, 10, 0, 100),
+            BackgroundTransparency = 0.9,
+            BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        }), {
+            CreateElement("UICorner", {CornerRadius = UDim.new(0, 8)}),
+            CreateElement("UIStroke", {
+                Color = Color3.fromRGB(0, 0, 0),
+                Thickness = 1,
+                Transparency = 0.5
+            })
+        })
+
+        local TransChecker = CreateElement("ImageLabel", {
+            Parent = TransContainer,
+            Name = "TransChecker",
+            Size = UDim2.new(1, -4, 1, -4),
+            Position = UDim2.new(0, 2, 0, 2),
+            BackgroundTransparency = 1,
+            Image = "rbxassetid://139785960036434",
+            ScaleType = Enum.ScaleType.Tile,
+            TileSize = UDim2.new(0, 6, 0, 6)
+        })
+        CreateElement("UICorner", {CornerRadius = UDim.new(0, 6), Parent = TransChecker})
+
+        local TransSlider = CreateElement("Frame", {
+            Parent = TransChecker,
+            Name = "TransSlider",
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 0
+        })
+        local Trans_Corner = CreateElement("UICorner", {CornerRadius = UDim.new(0, 6), Parent = TransSlider})
+        
+        local Trans_Gradient = CreateElement("UIGradient", {
+            Parent = TransSlider,
+            Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)),
+                ColorSequenceKeypoint.new(1.00, Colorpicker.Value)
+            }
+        })
+
+        local Trans_Cursor = SetChildren(CreateElement("Frame", {
+            Parent = TransSlider,
+            Name = "Trans_Cursor",
+            Size = UDim2.new(0, 4, 1, 4),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        }), {
+            CreateElement("UICorner", {CornerRadius = UDim.new(0, 2)}),
+            CreateElement("UIStroke", {
+                Color = Color3.fromRGB(0, 0, 0),
+                Thickness = 1.5,
+                Transparency = 0.2
+            })
+        })
+
+        local ColorH, ColorS, ColorV = Color3.toHSV(Colorpicker.Value)
+        local TransparencyColor = Colorpicker.TransparencyValue
+
+        local function UpdateColor()
+            ColorH = math.clamp(ColorH, 0, 1)
+            ColorS = math.clamp(ColorS, 0, 1)
+            ColorV = math.clamp(ColorV, 0, 1)
+            TransparencyColor = math.clamp(TransparencyColor, 0, 1)
+
+            local PureColor = Color3.fromHSV(ColorH, ColorS, ColorV)
+            
+            SV_Plane.ImageColor3 = Color3.fromHSV(ColorH, 1, 1)
+            
+            Trans_Gradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)),
+                ColorSequenceKeypoint.new(1.00, PureColor)
+            }
+
+            ColorBox.BackgroundColor3 = PureColor
+            ColorBox.BackgroundTransparency = TransparencyColor
+            
+            Colorpicker.Value = PureColor
+            Colorpicker.TransparencyValue = TransparencyColor
+
+            ColorpickerConfig.Callback(PureColor, TransparencyColor)
+        end
+
+        local function SyncCursors()
+            SV_Cursor.Position = UDim2.new(1 - ColorS, 0, 1 - ColorV, 0)
+            Hue_Cursor.Position = UDim2.new(0.5, 0, ColorH, 0)
+            Trans_Cursor.Position = UDim2.new(1 - TransparencyColor, 0, 0.5, 0)
+            UpdateColor()
+        end
+
+        local DraggingSV = false
+        AddConnection(SV_Plane.InputBegan, function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                DraggingSV = true
+                local conn
+                conn = AddConnection(RunService.RenderStepped, function()
+                    if not DraggingSV then conn:Disconnect() return end
+                    local AbsPos = SV_Plane.AbsolutePosition
+                    local AbsSize = SV_Plane.AbsoluteSize
+                    local MouseX = math.clamp((Mouse.X - AbsPos.X) / AbsSize.X, 0, 1)
+                    local MouseY = math.clamp((Mouse.Y - AbsPos.Y) / AbsSize.Y, 0, 1)
+
+                    ColorS = 1 - MouseX
+                    ColorV = 1 - MouseY
+                    SV_Cursor.Position = UDim2.new(MouseX, 0, MouseY, 0)
+                    UpdateColor()
+                end)
+            end
+        end)
+
+        AddConnection(UserInputService.InputEnded, function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                DraggingSV = false
+            end
+        end)
+
+        local DraggingHue = false
+        AddConnection(HueSlider.InputBegan, function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                DraggingHue = true
+                local conn
+                conn = AddConnection(RunService.RenderStepped, function()
+                    if not DraggingHue then conn:Disconnect() return end
+                    local AbsPos = HueSlider.AbsolutePosition
+                    local AbsSize = HueSlider.AbsoluteSize
+                    local MouseY = math.clamp((Mouse.Y - AbsPos.Y) / AbsSize.Y, 0, 1)
+
+                    ColorH = MouseY
+                    Hue_Cursor.Position = UDim2.new(0.5, 0, MouseY, 0)
+                    UpdateColor()
+                end)
+            end
+        end)
+
+        AddConnection(UserInputService.InputEnded, function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                DraggingHue = false
+            end
+        end)
+
+        local DraggingTrans = false
+        AddConnection(TransSlider.InputBegan, function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                DraggingTrans = true
+                local conn
+                conn = AddConnection(RunService.RenderStepped, function()
+                    if not DraggingTrans then conn:Disconnect() return end
+                    local AbsPos = TransSlider.AbsolutePosition
+                    local AbsSize = TransSlider.AbsoluteSize
+                    local MouseX = math.clamp((Mouse.X - AbsPos.X) / AbsSize.X, 0, 1)
+
+                    TransparencyColor = 1 - MouseX
+                    Trans_Cursor.Position = UDim2.new(MouseX, 0, 0.5, 0)
+                    UpdateColor()
+                end)
+            end
+        end)
+
+        AddConnection(UserInputService.InputEnded, function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                DraggingTrans = false
+            end
+        end)
+
+        local function TogglePicker(State)
+            Colorpicker.Opened = State
+            ColorpickerFrame:SetAttribute("Opened", State)
+            if Colorpicker.Opened then
+                Content.Visible = true
+                PlayTween(ColorpickerFrame, 0.2, {Size = UDim2.new(1, 0, 0, 160)})
+            else
+                local CloseTween = PlayTween(ColorpickerFrame, 0.2, {Size = UDim2.new(1, 0, 0, 30)})
+                CloseTween.Completed:Once(function()
+                    if not Colorpicker.Opened then
+                        Content.Visible = false
+                    end
+                end)
+            end
+        end
+
+        AddConnection(Header.InputEnded, function(Input)
+            if Input.UserInputType ~= Enum.UserInputType.MouseButton1 and Input.UserInputType ~= Enum.UserInputType.Touch then return end
+            TogglePicker(not Colorpicker.Opened)
+        end)
+
+        local function AnimateSizeNearPickers(Size)
+            if ColorpickerNumber - 1 ~= 0 then AnimateNeighbor(ColorpickerNumber - 1, Size) end
+            if ColorpickerNumber + 1 <= #UI.Elements then AnimateNeighbor(ColorpickerNumber + 1, Size) end
+        end
+
+        AddConnection(ColorpickerFrame.MouseEnter, function()
+            if Colorpicker.Opened then return end
+            PlayTween(ColorpickerFrame, 0.2, {Size = UDim2.new(1, 0, 0, 40)})
+            PlayTween(Title, 0.2, {TextSize = 18})
+            PlayTween(ColorBoxBorder, 0.2, {Size = UDim2.new(0, 32, 0, 20)})
+            PlayTween(ColorpickerFrame.UIStroke, 0.15, {Color = Color3.fromRGB(240, 240, 240)})
+            AnimateSizeNearPickers(25)
+        end)
+
+        AddConnection(ColorpickerFrame.MouseLeave, function()
+            if Colorpicker.Opened then return end
+            PlayTween(ColorpickerFrame, 0.2, {Size = UDim2.new(1, 0, 0, 30)})
+            PlayTween(Title, 0.2, {TextSize = 15})
+            PlayTween(ColorBoxBorder, 0.2, {Size = UDim2.new(0, 26, 0, 16)})
+            PlayTween(ColorpickerFrame.UIStroke, 0.15, {Color = Color3.fromRGB(0, 0, 0)})
+            AnimateSizeNearPickers(30)
+        end)
+
+        function Colorpicker:Set(Value, TransValue)
+            ColorH, ColorS, ColorV = Color3.toHSV(Value)
+            TransparencyColor = TransValue or 0
+            SyncCursors()
+        end
+
+        Colorpicker:Set(Colorpicker.Value, Colorpicker.TransparencyValue)
+        return Colorpicker
     end
 
     function Tab:CreateLabel(LabelText: string?): table
