@@ -100,8 +100,22 @@ simple non-interactive text container for headers or information. supports richt
 Window:CreateLabel("<b>version 1.0.0</b>")
 ```
 
-10. unloading the ui
-destroys active elements and completely clears memory.
+10. colorpicker
+expanding color picker with a hsv saturation/value grid, vertical hue bar, and horizontal transparency/opacity slider.
+
+```lua
+Window:CreateColorpicker({
+    Name = "accent color",
+    Default = Color3.fromRGB(255, 0, 127),  -- default rgb color
+    DefaultTransparency = 0.3,              -- default transparency (0 to 1)
+    Callback = function(color, transparency)
+        print("color updated:", color, "alpha:", transparency)
+    end
+})
+```
+
+11. unload
+ui unload🤑
 
 ```lua
 UI:Unload()
