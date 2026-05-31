@@ -115,7 +115,7 @@ Window:CreateColorpicker({
 ```
 
 11. unload
-ui unload🤑
+ui🤑
 
 ```lua
 UI:Unload()
